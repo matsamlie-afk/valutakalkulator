@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Valutakalkulator</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg0: #071018;
+      --bg1: #0d1826;
+      --card: rgba(16, 28, 46, 0.78);
+      --stroke: rgba(140, 190, 255, 0.16);
+      --text: #eef5ff;
+      --muted: #93a4bc;
+      --accent: #5eead4;
+      --accent2: #60a5fa;
+      --warn: #fbbf24;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: "Segoe UI", Inter, Roboto, system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 10% -10%, rgba(94, 234, 212, 0.18), transparent 50%),
+        radial-gradient(900px 500px at 110% 0%, rgba(96, 165, 250, 0.16), transparent 46%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height: 100dvh;
+      padding: max(18px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+    }
+    .app { max-width: 430px; margin: 0 auto; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+      background: linear-gradient(145deg, #2dd4bf, #3b82f6);
+      box-shadow: 0 8px 20px rgba(45, 212, 191, 0.28); font-size: 22px;
+    }
+    h1 { margin: 0; font-size: 1.15rem; letter-spacing: -0.02em; }
+    .sub { margin: 2px 0 0; color: var(--muted); font-size: 0.78rem; }
+    .status {
+      font-size: 0.72rem; color: var(--muted); background: rgba(255,255,255,0.04);
+      border: 1px solid var(--stroke); border-radius: 999px; padding: 6px 10px; white-space: nowrap;
+    }
+    .status.ok { color: #99f6e4; }
+    .status.err { color: #fecaca; }
+    .card {
+      background: var(--card); border: 1px solid var(--stroke); border-radius: var(--radius);
+      box-shadow: var(--shadow); backdrop-filter: blur(16px); padding: 18px;
+    }
+    label { display: block; color: var(--muted); font-size: 0.75rem; margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .amount {
+      width: 100%; background: rgba(4, 10, 18, 0.55); border: 1px solid var(--stroke); color: var(--text);
+      border-radius: 16px; padding: 16px 16px 14px; font-size: 2rem; font-weight: 650; letter-spacing: -0.03em; outline: none;
+    }
+    .amount:focus { border-color: rgba(94, 234, 212, 0.55); box-shadow: 0 0 0 4px rgba(94, 234, 212, 0.12); }
+    .row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end; margin-top: 16px; }
+    select {
+      width: 100%; appearance: none;
+      background: rgba(4, 10, 18, 0.55) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2393a4bc' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center;
+      border: 1px solid var(--stroke); color: var(--text); border-radius: 16px; padding: 14px 34px 14px 12px; font-size: 1rem; outline: none;
+    }
+    .swap {
+      width: 48px; height: 48px; border: 0; border-radius: 50%;
+      background: linear-gradient(145deg, #2dd4bf, #2563eb); color: #041018;
+      font-size: 20px; font-weight: 700; cursor: pointer; margin-bottom: 2px;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+    }
+    .swap:active { transform: scale(0.94) rotate(180deg); }
+    .result {
+      margin-top: 18px; padding: 16px; border-radius: 16px;
+      background: linear-gradient(180deg, rgba(94,234,212,0.10), rgba(96,165,250,0.06));
+      border: 1px solid rgba(94, 234, 212, 0.18);
+    }
+    .result .eq { color: var(--muted); font-size: 0.82rem; margin-bottom: 4px; }
+    .result .value { font-size: 1.85rem; font-weight: 700; letter-spacing: -0.03em; word-break: break-word; }
+    .rate-line { margin-top: 8px; color: var(--muted); font-size: 0.82rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .chip { border: 1px solid var(--stroke); background: rgba(255,255,255,0.04); color: var(--text); border-radius: 999px; padding: 8px 12px; font-size: 0.82rem; cursor: pointer; }
+    .chip.active { border-color: rgba(94,234,212,0.45); background: rgba(94,234,212,0.12); }
+    footer { margin-top: 16px; color: var(--muted); font-size: 0.75rem; line-height: 1.45; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">💱</div>
+        <div>
+          <h1>Valutakalkulator</h1>
+          <p class="sub">Enkel demo til Android</p>
+        </div>
+      </div>
+      <div id="status" class="status">Laster kurser…</div>
+    </header>
+    <section class="card">
+      <label for="amount">Beløp</label>
+      <input id="amount" class="amount" type="number" inputmode="decimal" value="1000" min="0" step="any" />
+      <div class="row">
+        <div>
+          <label for="from">Fra</label>
+          <select id="from"></select>
+        </div>
+        <button class="swap" id="swap" type="button" aria-label="Bytt valuta">⇄</button>
+        <div>
+          <label for="to">Til</label>
+          <select id="to"></select>
+        </div>
+      </div>
+      <div class="result">
+        <div class="eq" id="eq">1000 NOK tilsvarer</div>
+        <div class="value" id="value">—</div>
+        <div class="rate-line" id="rateLine">Henter vekslingskurs…</div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </section>
+    <footer>
+      Kurser hentes fra open.er-api.com (daglig oppdatering).<br />
+      Kurser og siste valg lagres lokalt. Virker også offline etter første lasting.<br />
+      Chrome → meny → «Legg til på startskjerm» for app-følelse.
+    </footer>
+  </div>
+  <script>
+    const CURRENCIES = [
+      { code: "NOK", name: "Norske kroner", flag: "🇳🇴" },
+      { code: "EUR", name: "Euro", flag: "🇪🇺" },
+      { code: "USD", name: "Amerikanske dollar", flag: "🇺🇸" },
+      { code: "SEK", name: "Svenske kroner", flag: "🇸🇪" },
+      { code: "DKK", name: "Danske kroner", flag: "🇩🇰" },
+      { code: "GBP", name: "Britiske pund", flag: "🇬🇧" },
+      { code: "CHF", name: "Sveitsiske franc", flag: "🇨🇭" },
+      { code: "PLN", name: "Polske złoty", flag: "🇵🇱" },
+      { code: "JPY", name: "Japanske yen", flag: "🇯🇵" },
+      { code: "AUD", name: "Australske dollar", flag: "🇦🇺" },
+      { code: "CAD", name: "Kanadiske dollar", flag: "🇨🇦" },
+      { code: "CNY", name: "Kinesiske yuan", flag: "🇨🇳" },
+      { code: "TRY", name: "Tyrkiske lira", flag: "🇹🇷" },
+      { code: "THB", name: "Thailandske baht", flag: "🇹🇭" },
+      { code: "INR", name: "Indiske rupi", flag: "🇮🇳" },
+      { code: "ISK", name: "Islandske kroner", flag: "🇮🇸" }
+    ];
+    const PRESETS = [["NOK","EUR"],["NOK","USD"],["NOK","SEK"],["EUR","NOK"],["USD","NOK"]];
+    const amountEl = document.getElementById("amount");
+    const fromEl = document.getElementById("from");
+    const toEl = document.getElementById("to");
+    const valueEl = document.getElementById("value");
+    const eqEl = document.getElementById("eq");
+    const rateLineEl = document.getElementById("rateLine");
+    const statusEl = document.getElementById("status");
+    const chipsEl = document.getElementById("chips");
+    const STORE = { rates: "fxRates", updated: "fxUpdated", prefs: "fxPrefs" };
+    function loadJSON(key, fallback) {
+      try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
+    }
+    let rates = loadJSON(STORE.rates, null);
+    let updated = localStorage.getItem(STORE.updated) || "";
+    const prefs = loadJSON(STORE.prefs, { amount: "1000", from: "NOK", to: "EUR" });
+    function savePrefs() {
+      localStorage.setItem(STORE.prefs, JSON.stringify({ amount: amountEl.value, from: fromEl.value, to: toEl.value }));
+    }
+    function fillSelects() {
+      const opts = CURRENCIES.map(c => `<option value="${c.code}">${c.flag} ${c.code} — ${c.name}</option>`).join("");
+      fromEl.innerHTML = opts; toEl.innerHTML = opts;
+      amountEl.value = prefs.amount || "1000"; fromEl.value = prefs.from || "NOK"; toEl.value = prefs.to || "EUR";
+    }
+    function fmt(n, currency) {
+      try {
+        return new Intl.NumberFormat("nb-NO", { style: "currency", currency, maximumFractionDigits: n >= 100 ? 2 : 4 }).format(n);
+      } catch {
+        return n.toLocaleString("nb-NO", { maximumFractionDigits: 4 }) + " " + currency;
+      }
+    }
+    function convert() {
+      const amount = Number(amountEl.value);
+      const from = fromEl.value;
+      const to = toEl.value;
+      if (!rates || !rates[from] || !rates[to] || !Number.isFinite(amount)) { valueEl.textContent = "—"; return; }
+      const rate = rates[to] / rates[from];
+      const out = amount * rate;
+      eqEl.textContent = `${amount.toLocaleString("nb-NO")} ${from} tilsvarer`;
+      valueEl.textContent = fmt(out, to);
+      rateLineEl.textContent = `1 ${from} = ${rate.toLocaleString("nb-NO", { maximumFractionDigits: 6 })} ${to}` +
+        (updated ? ` · oppdatert ${updated}` : "") + (navigator.onLine ? "" : " · offline");
+      highlightChips(); savePrefs();
+    }
+    function highlightChips() {
+      [...chipsEl.children].forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.from === fromEl.value && btn.dataset.to === toEl.value);
+      });
+    }
+    async function loadRates() {
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD");
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        if (data.result !== "success") throw new Error("API-feil");
+        rates = data.rates;
+        updated = new Date().toLocaleString("nb-NO", { dateStyle: "short", timeStyle: "short" });
+        localStorage.setItem(STORE.rates, JSON.stringify(rates));
+        localStorage.setItem(STORE.updated, updated);
+        statusEl.textContent = "Live kurser"; statusEl.className = "status ok";
+      } catch (err) {
+        if (rates) {
+          statusEl.textContent = navigator.onLine ? "Lagrede kurser" : "Offline";
+          statusEl.className = "status";
+        } else {
+          statusEl.textContent = "Kunne ikke hente kurser"; statusEl.className = "status err";
+          rateLineEl.textContent = "Sjekk nettverket og last siden på nytt.";
+        }
+      }
+      convert();
+    }
+    document.getElementById("swap").addEventListener("click", () => {
+      const tmp = fromEl.value; fromEl.value = toEl.value; toEl.value = tmp; convert();
+    });
+    [amountEl, fromEl, toEl].forEach(el => el.addEventListener("input", convert));
+    PRESETS.forEach(([from, to]) => {
+      const btn = document.createElement("button");
+      btn.className = "chip"; btn.type = "button"; btn.dataset.from = from; btn.dataset.to = to;
+      btn.textContent = `${from} → ${to}`;
+      btn.addEventListener("click", () => { fromEl.value = from; toEl.value = to; convert(); });
+      chipsEl.appendChild(btn);
+    });
+    fillSelects();
+    if (rates) { statusEl.textContent = navigator.onLine ? "Lagrede kurser" : "Offline"; convert(); }
+    loadRates();
+    window.addEventListener("online", loadRates);
+    window.addEventListener("offline", () => {
+      if (rates) { statusEl.textContent = "Offline"; statusEl.className = "status"; convert(); }
+    });
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {});
+  </script>
+</body>
+</html>

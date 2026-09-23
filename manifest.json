@@ -1,0 +1,23 @@
+{
+  "id": "./",
+  "name": "Valutakalkulator",
+  "short_name": "Valuta",
+  "description": "Enkel valutakalkulator med live kurser og offline-lagring.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#071018",
+  "theme_color": "#0b1220",
+  "lang": "no",
+  "dir": "ltr",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
